@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ahmad Ali — Systems. Structure. Digital Products.</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+/* ── TOKENS ── */
+:root {
+  --bg:          #0F1115;
+  --bg-1:        #13161C;
+  --bg-2:        #181C24;
+  --surface:     rgba(255,255,255,0.038);
+  --border:      rgba(255,255,255,0.072);
+  --border-h:    rgba(255,255,255,0.14);
+  --text:        #E8EBF0;
+  --text-2:      #8B909E;
+  --text-3:      #50566A;
+  --accent:      #4B7CF4;
+  --accent-2:    #7C5CF4;
+  --accent-dim:  rgba(75,124,244,0.12);
+  --glow:        rgba(75,124,244,0.18);
+  --f-serif:     'Playfair Display', Georgia, serif;
+  --f-sans:      'IBM Plex Sans', sans-serif;
+  --f-mono:      'IBM Plex Mono', monospace;
+  --r:           10px;
+  --r-lg:        16px;
+  --ease:        cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring: cubic-bezier(0.16, 1.1, 0.3, 1);
+}
+
+/* ── RESET ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; overflow-x: hidden; font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-sans);
+  font-weight: 300;
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; }
+a { color: inherit; text-decoration: none; }
+button { border: none; background: none; cursor: pointer; color: inherit; font: inherit; }
+
+/* ── SCROLL PROGRESS ── */
+#prog {
+  position: fixed; top: 0; left: 0; height: 1px; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  z-index: 1000;
+  transition: width 0.08s linear;
+  box-shadow: 0 0 8px var(--glow);
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 3rem;
+  background: rgba(15,17,21,0); border-bottom: 1px solid rgba(255,255,255,0);
+  transition: background 0.5s var(--ease), border-color 0.5s var(--ease), padding 0.4s var(--ease);
+}
+nav.scrolled {
+  background: rgba(15,17,21,0.88);
+  backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 3rem;
+}
+.nav-logo {
+  font-family: var(--f-serif);
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  opacity: 0.9;
+}
+.nav-links {
+  display: flex; gap: 2.5rem; list-style: none;
+}
+.nav-links a {
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  position: relative;
+  transition: color 0.3s;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute; bottom: -3px; left: 0; right: 0; height: 1px;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.35s var(--ease);
+}
+.nav-links a:hover { color: var(--text); }
+.nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+.nav-links a.active { color: var(--text); }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 8rem 3rem 6rem;
+  position: relative; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.2;
+}
+.hero-orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--accent), transparent 70%);
+  top: -150px; right: -100px;
+  animation: floatOrb 18s ease-in-out infinite;
+}
+.hero-orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, var(--accent-2), transparent 70%);
+  bottom: -100px; left: -80px;
+  animation: floatOrb 24s ease-in-out infinite reverse;
+}
+@keyframes floatOrb {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(40px,-30px) scale(1.05); }
+  66% { transform: translate(-20px,20px) scale(0.97); }
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+}
+
+.hero-inner { max-width: 1100px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
+.hero-tag {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeSlideUp 0.8s var(--ease) 0.2s forwards;
+  display: flex; align-items: center; gap: 0.7rem;
+}
+.hero-tag::before {
+  content: '';
+  display: inline-block;
+  width: 28px; height: 1px;
+  background: var(--accent);
+}
+h1 {
+  font-family: var(--f-serif);
+  font-size: clamp(3.5rem, 8vw, 7.5rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  opacity: 0;
+  animation: fadeSlideUp 0.9s var(--ease) 0.4s forwards;
+}
+.hero-sub {
+  font-family: var(--f-serif);
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  font-weight: 400;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+  margin-top: 1.2rem;
+  opacity: 0;
+  animation: fadeSlideUp 0.9s var(--ease) 0.6s forwards;
+}
+.hero-desc {
+  max-width: 560px;
+  font-size: 0.95rem;
+  color: var(--text-2);
+  margin-top: 2rem;
+  line-height: 1.75;
+  opacity: 0;
+  animation: fadeSlideUp 0.9s var(--ease) 0.8s forwards;
+}
+.hero-actions {
+  display: flex; gap: 1rem; margin-top: 3rem;
+  opacity: 0;
+  animation: fadeSlideUp 0.9s var(--ease) 1s forwards;
+}
+.btn {
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.85rem 2rem;
+  border-radius: var(--r);
+  transition: all 0.35s var(--ease);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.btn:hover::before { opacity: 1; }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 24px rgba(75,124,244,0.25);
+}
+.btn-primary:hover {
+  box-shadow: 0 0 40px rgba(75,124,244,0.45);
+  transform: translateY(-2px);
+}
+.btn-ghost {
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.btn-ghost:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+.hero-scroll {
+  position: absolute; bottom: 2.5rem; left: 3rem;
+  font-family: var(--f-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: flex; align-items: center; gap: 0.8rem;
+  opacity: 0;
+  animation: fadeSlideUp 0.8s var(--ease) 1.4s forwards;
+}
+.scroll-line { width: 40px; height: 1px; background: var(--text-3); position: relative; overflow: hidden; }
+.scroll-line::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--text-2);
+  transform: translateX(-100%);
+  animation: scrollSlide 2s var(--ease) infinite 1.8s;
+}
+@keyframes scrollSlide { 0%{transform:translateX(-100%)}100%{transform:translateX(100%)} }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SECTION BASE ── */
+section { padding: 7rem 3rem; position: relative; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label {
+  font-family: var(--f-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.2rem;
+  display: flex; align-items: center; gap: 0.7rem;
+}
+.section-label::before {
+  content: ''; display: inline-block;
+  width: 20px; height: 1px; background: var(--accent);
+}
+.section-title {
+  font-family: var(--f-serif);
+  font-size: clamp(2rem, 4.5vw, 3.8rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+/* ── REVEAL ANIMATION ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ── DIVIDER ── */
+.divider {
+  max-width: 1100px; margin: 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ── ABOUT ── */
+#about { background: var(--bg-1); }
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+  margin-top: 4rem;
+}
+.about-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 2.5rem;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+.about-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+.about-card:hover {
+  border-color: var(--border-h);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 0 1px var(--accent-dim);
+}
+.about-text {
+  font-size: 0.95rem;
+  color: var(--text-2);
+  line-height: 1.85;
+  margin-bottom: 1.5rem;
+}
+.about-highlight {
+  font-size: 0.88rem;
+  color: var(--text-3);
+  font-family: var(--f-mono);
+  font-style: italic;
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+  margin-top: 1.5rem;
+  line-height: 1.7;
+}
+.about-stats {
+  display: flex; flex-direction: column; gap: 1.5rem;
+}
+.stat-item {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  transition: border-color 0.3s, transform 0.3s var(--ease);
+}
+.stat-item:hover {
+  border-color: var(--border-h);
+  transform: translateX(6px);
+}
+.stat-num {
+  font-family: var(--f-serif);
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.stat-label {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 0.4rem;
+}
+
+/* ── PROJECTS ── */
+#projects { background: var(--bg); }
+.project-filters {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  margin: 2.5rem 0;
+}
+.chip {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.38rem 1rem;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+}
+.chip:hover { border-color: var(--border-h); color: var(--text-2); }
+.chip.active {
+  background: var(--accent-dim);
+  border-color: rgba(75,124,244,0.35);
+  color: var(--accent);
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+.proj-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 2rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.4s, transform 0.4s var(--ease), box-shadow 0.4s;
+  display: flex; flex-direction: column;
+}
+.proj-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(75,124,244,0.08), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.proj-card:hover {
+  border-color: rgba(75,124,244,0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+}
+.proj-card:hover::after { opacity: 1; }
+.proj-num {
+  font-family: var(--f-mono);
+  font-size: 0.62rem;
+  color: var(--text-3);
+  letter-spacing: 0.12em;
+  margin-bottom: 1.2rem;
+}
+.proj-icon {
+  width: 40px; height: 40px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(75,124,244,0.2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.2rem;
+  color: var(--accent);
+  font-size: 1.1rem;
+  transition: background 0.3s, border-color 0.3s;
+}
+.proj-card:hover .proj-icon {
+  background: rgba(75,124,244,0.18);
+  border-color: rgba(75,124,244,0.35);
+}
+.proj-title {
+  font-family: var(--f-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+  line-height: 1.3;
+}
+.proj-desc {
+  font-size: 0.82rem;
+  color: var(--text-3);
+  line-height: 1.7;
+  flex: 1;
+}
+.proj-tags {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin-top: 1.5rem;
+}
+.proj-tag {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+.proj-arrow {
+  position: absolute; top: 1.5rem; right: 1.5rem;
+  width: 28px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-3);
+  font-size: 0.8rem;
+  transition: all 0.3s;
+}
+.proj-card:hover .proj-arrow {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: translate(2px, -2px);
+}
+
+/* ── MODAL ── */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.modal-bg.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-2);
+  border: 1px solid var(--border-h);
+  border-radius: var(--r-lg);
+  max-width: 680px; width: 100%;
+  max-height: 85vh; overflow-y: auto;
+  transform: translateY(24px) scale(0.97);
+  transition: transform 0.4s var(--ease-spring);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(75,124,244,0.12);
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.modal-bg.open .modal { transform: translateY(0) scale(1); }
+.modal-header {
+  padding: 2.5rem 2.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+}
+.modal-close {
+  width: 32px; height: 32px; flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: var(--text-2); cursor: pointer;
+  transition: all 0.3s; margin-top: 4px;
+}
+.modal-close:hover { background: rgba(255,255,255,0.08); color: var(--text); border-color: var(--border-h); }
+.modal-title { font-family: var(--f-serif); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.01em; }
+.modal-body { padding: 2.5rem; display: flex; flex-direction: column; gap: 1.8rem; }
+.modal-section-title {
+  font-family: var(--f-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+.modal-section p {
+  font-size: 0.88rem;
+  color: var(--text-2);
+  line-height: 1.8;
+}
+
+/* ── PHILOSOPHY ── */
+#philosophy { background: var(--bg-1); }
+.philosophy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 4rem;
+}
+.phil-card {
+  padding: 2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  transition: border-color 0.3s, transform 0.3s var(--ease);
+  position: relative;
+}
+.phil-card::before {
+  content: '';
+  position: absolute; top: 0; left: 2rem; right: 2rem; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-h), transparent);
+}
+.phil-card:hover {
+  border-color: var(--border-h);
+  transform: translateY(-4px);
+}
+.phil-num {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--text-3);
+  margin-bottom: 1rem;
+}
+.phil-title {
+  font-family: var(--f-serif);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.7rem;
+}
+.phil-text { font-size: 0.84rem; color: var(--text-3); line-height: 1.75; }
+
+/* ── VISION ── */
+#vision {
+  background: var(--bg);
+  min-height: 70vh;
+  display: flex; flex-direction: column; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.vision-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(75,124,244,0.05), transparent);
+}
+.vision-inner { max-width: 900px; margin: 0 auto; width: 100%; padding: 0 3rem; }
+.vision-line-top {
+  font-family: var(--f-serif);
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 3rem;
+}
+.vision-line-top em { color: var(--accent); font-style: italic; }
+.vision-divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  margin-bottom: 2rem;
+}
+.vision-body {
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  color: var(--text-2);
+  line-height: 1.85;
+  max-width: 580px;
+}
+
+/* ── CONTACT ── */
+#contact { background: var(--bg-1); }
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-top: 4rem;
+  align-items: start;
+}
+.contact-info { }
+.contact-tagline {
+  font-family: var(--f-serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 1.5rem;
+}
+.contact-detail {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin-bottom: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.contact-detail:hover {
+  border-color: rgba(75,124,244,0.3);
+  background: var(--accent-dim);
+}
+.contact-detail-icon {
+  width: 32px; height: 32px; flex-shrink: 0;
+  background: var(--accent-dim);
+  border: 1px solid rgba(75,124,244,0.2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+}
+.contact-detail-text { font-size: 0.85rem; color: var(--text-2); }
+.contact-detail-label {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.copy-toast {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  margin-left: auto;
+  text-transform: uppercase;
+}
+.contact-detail:hover .copy-toast { opacity: 0.7; }
+
+.contact-form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 2.5rem;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+.contact-form-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.4;
+}
+.form-row { margin-bottom: 1.25rem; }
+.form-label {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 0.5rem;
+}
+.form-input, .form-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 0.8rem 1rem;
+  color: var(--text);
+  font-family: var(--f-sans);
+  font-size: 0.88rem;
+  font-weight: 300;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  resize: none;
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text-3); }
+.form-input:focus, .form-textarea:focus {
+  border-color: rgba(75,124,244,0.45);
+  box-shadow: 0 0 0 3px rgba(75,124,244,0.07);
+}
+.form-textarea { height: 110px; }
+.form-submit {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--r);
+  color: #fff;
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: all 0.35s var(--ease);
+  box-shadow: 0 0 20px rgba(75,124,244,0.2);
+}
+.form-submit:hover {
+  box-shadow: 0 0 32px rgba(75,124,244,0.4);
+  transform: translateY(-2px);
+}
+.form-submit:active { transform: translateY(0); }
+
+/* ── FOOTER ── */
+footer {
+  padding: 2rem 3rem;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-copy {
+  font-family: var(--f-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+.footer-sig {
+  font-family: var(--f-serif);
+  font-size: 0.9rem;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 1.2rem 1.5rem; }
+  nav.scrolled { padding: 0.9rem 1.5rem; }
+  .nav-links { gap: 1.5rem; }
+  section { padding: 5rem 1.5rem; }
+  #hero { padding: 7rem 1.5rem 5rem; }
+  .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .projects-grid { grid-template-columns: repeat(2, 1fr); }
+  .philosophy-grid { grid-template-columns: 1fr 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .hero-scroll { left: 1.5rem; }
+}
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .projects-grid { grid-template-columns: 1fr; }
+  .philosophy-grid { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: column; }
+  .btn { text-align: center; }
+  footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.1ms !important;
+  }
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── SELECTION ── */
+::selection { background: rgba(75,124,244,0.25); color: var(--text); }
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <div class="nav-logo">Ahmad Ali</div>
+  <ul class="nav-links">
+    <li><a href="#hero" data-section="hero">Start</a></li>
+    <li><a href="#about" data-section="about">Om</a></li>
+    <li><a href="#projects" data-section="projects">Projekt</a></li>
+    <li><a href="#philosophy" data-section="philosophy">Approach</a></li>
+    <li><a href="#vision" data-section="vision">Vision</a></li>
+    <li><a href="#contact" data-section="contact">Kontakt</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-bg">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-grid"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="hero-tag">Civilingenjörsstudent — Datateknik, Sverige</div>
+    <h1>Ahmad Ali</h1>
+    <div class="hero-sub">Systems. Structure. Digital Products.</div>
+    <p class="hero-desc">Civilingenjörsstudent i Datateknik med starkt intresse för systemdesign, digitala plattformar och entreprenörskap. Bygger strukturer, testar idéer och utvecklar tekniska lösningar med fokus på användarflöde och skalbarhet.</p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn btn-primary">Explore Projects</a>
+      <a href="#contact" class="btn btn-ghost">Contact</a>
+    </div>
+  </div>
+  <div class="hero-scroll"><div class="scroll-line"></div>Scroll</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── ABOUT ── -->
+<section id="about">
+  <div class="section-inner">
+    <div class="section-label reveal">Om mig</div>
+    <div class="section-title reveal reveal-delay-1">Strukturerat tänkande.<br>Praktiskt utförande.</div>
+    <div class="about-grid">
+      <div class="about-card reveal reveal-delay-2">
+        <p class="about-text">Jag är student inom datateknik och gillar att bygga digitala saker som är tydliga och enkla att använda. Jag är nyfiken på hur system fungerar, både bakom kulisserna och i själva upplevelsen för användaren.</p>
+        <p class="about-text">Jag gillar att ta ett problem, dela upp det i mindre delar och försöka göra en lösning som faktiskt fungerar i praktiken. Jag tänker ofta på struktur, ordning och hur man gör saker enklare för andra.</p>
+        <p class="about-text">Jag har jobbat med projekt inom automation, digitala plattformar, varumärke och produktidéer. Ofta börjar jag med flöden och struktur, och bygger vidare steg för steg.</p>
+        <div class="about-highlight">"Utvecklar kontinuerligt mina tekniska färdigheter genom projektbaserat arbete och praktisk implementation."</div>
+      </div>
+      <div class="about-stats reveal reveal-delay-3">
+        <div class="stat-item">
+          <div class="stat-num">12+</div>
+          <div class="stat-label">Digitala Initiativ & Projekt</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">År 1</div>
+          <div class="stat-label">Civilingenjör Datateknik</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">∞</div>
+          <div class="stat-label">Idéer under utveckling</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">SE</div>
+          <div class="stat-label">Baserad i Sverige</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── PROJECTS ── -->
+<section id="projects">
+  <div class="section-inner">
+    <div class="section-label reveal">Projekt Lab</div>
+    <div class="section-title reveal reveal-delay-1">Selected Initiatives<br>&amp; Digital Projects</div>
+    <div class="project-filters reveal reveal-delay-2">
+      <button class="chip active" data-filter="all">Alla</button>
+      <button class="chip" data-filter="platform">Platform</button>
+      <button class="chip" data-filter="brand">Brand</button>
+      <button class="chip" data-filter="system">System</button>
+      <button class="chip" data-filter="ux">UX</button>
+      <button class="chip" data-filter="community">Community</button>
+    </div>
+    <div class="projects-grid" id="proj-grid"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── PHILOSOPHY ── -->
+<section id="philosophy">
+  <div class="section-inner">
+    <div class="section-label reveal">Approach</div>
+    <div class="section-title reveal reveal-delay-1">How I Think About<br>Digital Systems</div>
+    <div class="philosophy-grid">
+      <div class="phil-card reveal reveal-delay-1">
+        <div class="phil-num">01</div>
+        <div class="phil-title">Structure Before Visuals</div>
+        <p class="phil-text">Innan ett projekt får ett ansikte behöver det ett skelett. Jag börjar alltid med informationsarkitektur, flöden och hierarki innan design.</p>
+      </div>
+      <div class="phil-card reveal reveal-delay-2">
+        <div class="phil-num">02</div>
+        <div class="phil-title">User Flow First</div>
+        <p class="phil-text">Varje digital produkt är i grunden en serie beslut som en användare gör. Jag kartlägger dessa resor och optimerar för klarhet och konvertering.</p>
+      </div>
+      <div class="phil-card reveal reveal-delay-3">
+        <div class="phil-num">03</div>
+        <div class="phil-title">Scalable Thinking</div>
+        <p class="phil-text">Lösningar som fungerar för tio användare måste designas för att fungera för tiotusen. Jag tänker modulärt och undviker hårdkodade beroenden.</p>
+      </div>
+      <div class="phil-card reveal reveal-delay-2">
+        <div class="phil-num">04</div>
+        <div class="phil-title">Conversion Awareness</div>
+        <p class="phil-text">Teknik och affär är inte separata. Jag förstår hur tekniska beslut påverkar användarens beteende och systemets affärsvärde.</p>
+      </div>
+      <div class="phil-card reveal reveal-delay-3">
+        <div class="phil-num">05</div>
+        <div class="phil-title">System Clarity</div>
+        <p class="phil-text">Ett bra system är förståeligt för den som tar över det. Dokumentation, tydliga komponenter och logiska namngivningskonventioner är grunden.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── VISION ── -->
+<section id="vision">
+  <div class="vision-bg"></div>
+  <div class="vision-inner">
+    <div class="vision-line-top reveal">
+      Jag studerar teknik.<br>
+      Men jag <em>bygger</em><br>
+      också med den.
+    </div>
+    <div class="vision-divider reveal reveal-delay-1"></div>
+    <p class="vision-body reveal reveal-delay-2">Målet är att utveckla skalbara system, digitala produkter och strukturer som kombinerar teknik, affär och tydlig användarupplevelse.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── CONTACT ── -->
+<section id="contact">
+  <div class="section-inner">
+    <div class="section-label reveal">Kontakt</div>
+    <div class="section-title reveal reveal-delay-1">Let's build something<br>structured.</div>
+    <div class="contact-grid">
+      <div class="reveal reveal-delay-2">
+        <p class="contact-tagline">Öppen för samarbeten, diskussioner och nya initiativ.</p>
+        <div class="contact-detail" onclick="copyEmail(this)">
+          <div class="contact-detail-icon">✉</div>
+          <div>
+            <div class="contact-detail-label">E-post</div>
+            <div class="contact-detail-text">ahmadlarin14@gmail.com</div>
+          </div>
+          <span class="copy-toast">Kopiera</span>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">in</div>
+          <div>
+            <div class="contact-detail-label">LinkedIn</div>
+            <div class="contact-detail-text">linkedin.com/in/Ahmadali</div>
+          </div>
+          <span class="copy-toast">Öppna</span>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">⌘</div>
+          <div>
+            <div class="contact-detail-label">Plats</div>
+            <div class="contact-detail-text">Sverige</div>
+          </div>
+        </div>
+      </div>
+      <div class="contact-form-card reveal reveal-delay-3">
+        <form onsubmit="submitForm(event)">
+          <div class="form-row">
+            <label class="form-label" for="f-name">Ditt namn</label>
+            <input class="form-input" id="f-name" type="text" placeholder="Emelie Johansson" required>
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="f-email">E-post</label>
+            <input class="form-input" id="f-email" type="email" placeholder="Emelie@example.com" required>
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="f-msg">Meddelande</label>
+            <textarea class="form-textarea" id="f-msg" placeholder="Berätta om projektet eller idén..." required></textarea>
+          </div>
+          <button type="submit" class="form-submit" id="submit-btn">Skicka meddelande →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-copy">© 2025 Ahmad Ali — Civilingenjörsstudent i Datateknik</div>
+  <div class="footer-sig">Systems · Structure · Digital Products</div>
+</footer>
+
+<!-- ── MODAL ── -->
+<div class="modal-bg" id="modal-bg" role="dialog" aria-modal="true">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div id="m-tag" style="font-family:var(--f-mono);font-size:0.62rem;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:0.5rem"></div>
+        <div class="modal-title" id="m-title"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">Kontext</div>
+        <p id="m-context"></p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Approach</div>
+        <p id="m-approach"></p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Struktur</div>
+        <p id="m-structure"></p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Resultat</div>
+        <p id="m-outcome"></p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Nästa Fas</div>
+        <p id="m-next"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PROJECT DATA ─────────────────────────────────────────────
+const projects = [
+    {
+    num:"01", icon:"⚡", filter:["system","platform"],
+    title:"Live insamlingssystem",
+    desc:"Automatiserat system för insamling med uppdatering i realtid.",
+    tags:["Power Automate","Dashboard","Automation","Live Data"],
+    tag:"System",
+    context:"Behov av ett tydligt och pålitligt sätt att visa insamlad summa och status under kampanjer och event.",
+    approach:"Jag byggde hela flödet själv i Power Automate och kopplade det till en hemsida och flera kampanjskärmar som uppdaterades automatiskt.",
+    structure:"Datainsamling → automatiskt flöde → central datakälla → visning på hemsida och externa skärmar.",
+    outcome:"Fullt automatiserat system med live-uppdatering utan manuell inmatning. Tydlig transparens och stabil drift.",
+    next:"Vidareutveckla med enklare statistik och automatiska notiser."
+    },
+    {
+    num:"02", icon:"📋", filter:["platform","ux"],
+    title:"Bokningsplattform för tjänster",
+    desc:"Webbaserat bokningssystem med kalender och betalning.",
+    tags:["Booking","Calendar","Automation","Payment"],
+    tag:"Platform",
+    context:"Behov av en bokningslösning för olika tjänster med tydlig översikt för både kund och ägare.",
+    approach:"Jag byggde hemsidan med separata roller, automatiserad kalender och integrerad betalning.",
+    structure:"Användare → bokning → kalenderuppdatering → betalning → bekräftelse → adminöversikt.",
+    outcome:"Fungerande struktur för komplett bokningsflöde med automatiska uppdateringar.",
+    next:"Finslipa gränssnittet och optimera mobilupplevelsen."
+    },
+    {
+    num:"03", icon:"🍽", filter:["platform","ux"],
+    title:"Restaurangplattform med behovsfilter",
+    desc:"Webbplattform där användare filtrerar restauranger efter önskemål.",
+    tags:["UX","Filter","Web Platform","Product Idea"],
+    tag:"UX",
+    context:"Många saknar möjlighet att filtrera restauranger efter kost, budget och miljö på ett tydligt sätt.",
+    approach:"Jag byggde hemsidan och skapade filter för kostbehov, prisnivå, atmosfär och andra preferenser.",
+    structure:"Preferenser → filtrering → sorterade resultat → företagssidor.",
+    outcome:"Testad webbplattform med upplagda företag och fungerande filtreringslogik.",
+    next:"Utveckla vidare med fler användartester."
+    },
+    {
+    num:"04", icon:"🧩", filter:["platform","system"],
+    title:"Modulär byggplattform",
+    desc:"Plattform där användare kan skapa digitala lösningar steg för steg.",
+    tags:["Modular","Live Preview","API","Platform"],
+    tag:"Platform",
+    context:"Behov av en enkel väg att skapa appar och hemsidor utan att själv skriva kod.",
+    approach:"Jag byggde ett system med moduler och live preview där lösningen genereras direkt via API-integrationer.",
+    structure:"Val av funktion → API-anrop → generering → live preview → justering.",
+    outcome:"Fungerande testmiljö med integration mot externa språkmodeller och direkt förhandsvisning.",
+    next:"Optimera kostnadsstruktur och bygga vidare på kärnfunktionerna."
+    },
+    {
+    num:"05", icon:"🎯", filter:["system","community"],
+    title:"Poängsystem för ungdomsengagemang",
+    desc:"Digitalt system som ger poäng för närvaro och aktiviteter.",
+    tags:["Gamification","NFC","Tracking","Community"],
+    tag:"Community",
+    context:"Behov av ett sätt att öka närvaro och skapa tydlig progression bland ungdomar.",
+    approach:"Jag skapade ett poängsystem med NFC check-in och check-out kopplat till aktiviteter.",
+    structure:"NFC-registrering → poängtilldelning → nivåsystem → belöningar.",
+    outcome:"System som kopplar närvaro till konkreta belöningar som resor och aktiviteter.",
+    next:"Utveckla mobilvy för enklare uppföljning."
+    },
+    {
+    num:"06", icon:"💎", filter:["brand","platform"],
+    title:"Palmia – E-handelsvarumärke",
+    desc:"Byggde varumärke, webshop och produktstruktur.",
+    tags:["Brand","E-commerce","Identity","Strategy"],
+    tag:"Brand",
+    context:"Mål att skapa ett premiuminriktat parfymvarumärke med tydlig identitet.",
+    approach:"Jag ansvarade för hela processen: inköp, design, branding, prissättning och webshop.",
+    structure:"Varumärkesidé → visuell identitet → produktstruktur → webshop → lansering.",
+    outcome:"Live webshop med genomarbetad identitet och tydlig positionering.",
+    next:"Utveckla sortiment och förbättra konvertering."
+    },
+    {
+    num:"07", icon:"🔖", filter:["brand","platform"],
+    title:"Lost & Found NFC-tag",
+    desc:"Produktkoncept för NFC-baserad identifiering av föremål.",
+    tags:["NFC","Product","Brand","Webshop"],
+    tag:"Brand",
+    context:"Behov av enkel och trygg märkning av barns och personliga föremål.",
+    approach:"Jag tog fram produktidé, design, funktion och webshop.",
+    structure:"NFC-tag → digital informationssida → identifiering → återkoppling.",
+    outcome:"Färdigt koncept med tydlig användning och digital koppling.",
+    next:"Ta fram fysisk prototyp."
+    },
+    {
+    num:"08", icon:"📊", filter:["system","platform"],
+    title:"Parfymservice – Försäljningsplattform",
+    desc:"Skalbar modell för parfymförsäljning med inloggning och dashboard.",
+    tags:["Sales","Dashboard","Roles","Automation"],
+    tag:"System",
+    context:"Behov av en strukturerad försäljningsmodell för grupper och klasser.",
+    approach:"Jag byggde hemsida med olika roller, inloggning, rapportering och orderhantering.",
+    structure:"Användare → försäljning → registrering → beräkning → beställning → översikt.",
+    outcome:"Fungerande struktur med tydliga marginaler och enkel uppföljning.",
+    next:"Förenkla rapportverktyget ytterligare."
+    },
+    {
+    num:"09", icon:"🤝", filter:["platform","ux"],
+    title:"Tekniktjänstplattform",
+    desc:"Webbplattform för bokning av tekniska tjänster och montering.",
+    tags:["Service","Booking","Platform","UX"],
+    tag:"Platform",
+    context:"Behov av en tydlig plattform för tekniktjänster i hemmet.",
+    approach:"Jag skapade varumärke, struktur och bokningsflöde för tjänsterna.",
+    structure:"Tjänsteval → bokning → bekräftelse → uppföljning.",
+    outcome:"Färdig plattform med tydlig struktur och enkel användning.",
+    next:"Utöka med fler tjänstekategorier."
+    },
+    {
+    num:"10", icon:"✦", filter:["brand"],
+    title:"Logotyper och varumärkesidentitet",
+    desc:"Utvecklat över 20 visuella identiteter.",
+    tags:["Logo","Brand Identity","Design System","Web"],
+    tag:"Brand",
+    context:"Föreningar, UF-företag och mindre verksamheter behövde en tydlig visuell identitet.",
+    approach:"Jag tog fram logotyper, färgpaletter och enkla varumärkesguider.",
+    structure:"Brief → design → justering → färdigt brandpaket.",
+    outcome:"Levererat 20+ identiteter med konsekvent uttryck.",
+    next:"Utveckla rörlig grafik och mallar."
+    },
+    {
+    num:"11", icon:"📢", filter:["community","platform"],
+    title:"Digital strategi och sociala medier",
+    desc:"Ansvar för innehåll och kampanjer.",
+    tags:["TikTok","Content","Campaign","Growth"],
+    tag:"Community",
+    context:"Behov av mer struktur och tydlighet i digital kommunikation.",
+    approach:"Jag planerade, producerade och publicerade innehåll främst på TikTok.",
+    structure:"Planering → produktion → publicering → uppföljning.",
+    outcome:"Tydligare närvaro och bättre engagemang.",
+    next:"Automatisera delar av publiceringen."
+    },
+    {
+    num:"12", icon:"🔧", filter:["system"],
+    title:"Mobilreparation och felsökning",
+    desc:"Reparation och felsökning av mobiltelefoner.",
+    tags:["Hardware","Repair","Troubleshooting","Technical"],
+    tag:"System",
+    context:"Arbetat med felsökning och reparation åt kunder.",
+    approach:"Diagnostiserade problem och bytte komponenter som skärmar och batterier.",
+    structure:"Diagnos → åtgärd → test → leverans.",
+    outcome:"Löst tekniska problem och byggt praktisk förståelse.",
+    next:"Dokumentera processen mer strukturerat."
+    },
+    {
+    num:"13", icon:"🧴", filter:["brand","platform"],
+    title:"Discovery Box – Parfymprojekt",
+    desc:"Design och produktion av parfymboxar.",
+    tags:["Product Design","Sourcing","Brand","Packaging"],
+    tag:"Brand",
+    context:"Behov av ett strukturerat sätt att presentera flera dofter i en samlad box.",
+    approach:"Jag designade boxen, valde innehåll och hanterade inköp och produktion.",
+    structure:"Urval → design → inköp → produktion → leverans.",
+    outcome:"Färdig produkt med tydlig identitet och genomtänkt upplägg.",
+    next:"Utveckla fler boxkoncept."
+    }
+];
+
+// ── RENDER PROJECTS ───────────────────────────────────────────
+function renderProjects(filter = 'all') {
+  const grid = document.getElementById('proj-grid');
+  grid.innerHTML = '';
+  const list = filter === 'all' ? projects : projects.filter(p => p.filter.includes(filter));
+  list.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'proj-card reveal';
+    card.style.transitionDelay = (i % 3 * 0.07) + 's';
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', 'Öppna ' + p.title);
+    card.innerHTML = `
+      <div class="proj-num">${p.num}</div>
+      <div class="proj-arrow">↗</div>
+      <div class="proj-icon">${p.icon}</div>
+      <div class="proj-title">${p.title}</div>
+      <p class="proj-desc">${p.desc}</p>
+      <div class="proj-tags">${p.tags.map(t=>`<span class="proj-tag">${t}</span>`).join('')}</div>`;
+    card.addEventListener('click', () => openModal(p));
+    card.addEventListener('keypress', e => { if (e.key === 'Enter') openModal(p); });
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    });
+    grid.appendChild(card);
+    // trigger reveal after render
+    setTimeout(() => { card.classList.add('visible'); }, 60 + i * 50);
+  });
+}
+renderProjects();
+
+// ── FILTER ────────────────────────────────────────────────────
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    renderProjects(this.dataset.filter);
+  });
+});
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openModal(p) {
+  document.getElementById('m-tag').textContent = p.tag;
+  document.getElementById('m-title').textContent = p.title;
+  document.getElementById('m-context').textContent = p.context;
+  document.getElementById('m-approach').textContent = p.approach;
+  document.getElementById('m-structure').textContent = p.structure;
+  document.getElementById('m-outcome').textContent = p.outcome;
+  document.getElementById('m-next').textContent = p.next;
+  const bg = document.getElementById('modal-bg');
+  bg.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  bg.querySelector('.modal').scrollTop = 0;
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modal-bg').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── SCROLL EFFECTS ────────────────────────────────────────────
+const prog = document.getElementById('prog');
+const nav = document.getElementById('nav');
+
+function onScroll() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  prog.style.width = (scrollY / max * 100) + '%';
+  nav.classList.toggle('scrolled', scrollY > 60);
+
+  // Section active nav
+  const sections = ['hero','about','projects','philosophy','vision','contact'];
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && scrollY >= el.offsetTop - 150) current = id;
+  });
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.classList.toggle('active', a.dataset.section === current);
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+// ── INTERSECTION OBSERVER ─────────────────────────────────────
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ── COPY EMAIL ────────────────────────────────────────────────
+function copyEmail(el) {
+  navigator.clipboard?.writeText('ahmadlarin14@gmail.com');
+  const toast = el.querySelector('.copy-toast');
+  toast.textContent = 'Kopierat!';
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.textContent = 'Kopiera'; toast.style.opacity = ''; }, 2000);
+}
+
+// ── FORM SUBMIT ───────────────────────────────────────────────
+function submitForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Skickar…';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = '✓ Meddelande skickat';
+    btn.style.background = 'rgba(75,244,150,0.15)';
+    btn.style.borderColor = 'rgba(75,244,150,0.4)';
+    btn.style.color = '#4bf496';
+  }, 1200);
+}
+
+// ── SMOOTH NAV CLICK ──────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+</script>
+</body>
+</html>
